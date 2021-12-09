@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "How to prepare a bootable USB stick with Ubuntu on macOS using CLI"
-date:   2021-12-08 13:27:32 +0100
+date:   2021-12-08
 tags: ubuntu, linux, cli, macOS
 ---
 
@@ -10,7 +10,8 @@ Recently I wanted to install fresh Ubuntu LTS on my other laptop. Official docum
 1. Format USB drive with the standard application `Disk Utility`.
 2. Install and run Etcher - eeh! I don't want to install anything for this!
 
-...
+
+<!--more-->
 
 So if you are looking how to create a bootable USB drive, here are my notes.
 
