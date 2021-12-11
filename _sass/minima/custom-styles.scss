@@ -37,6 +37,10 @@ a:link {
   color: $link-color;
 }
 
+a:visited {
+  color: $link-color;
+}
+
 a:hover {
   background: $code-background;
 }
