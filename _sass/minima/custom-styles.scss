@@ -1,22 +1,24 @@
+// Link at the end of the excerpt to continue to the full post
 .continue-link {
   display: block;
   font-size: small;
 }
 
+// Things in the header
 .site-title {
   font-size: xx-large;
 }
 
-a:hover.site-title {
-  background-color: $link-color;
-}
-
 .site-nav .page-link {
-  color: white;
+  color: $site-title-color;
 }
 
-a:hover.page-link {
+.site-nav {
   background-color: $link-color;
+}
+
+.site-nav .menu-icon > svg path {
+  fill: $site-title-color;
 }
 
 .site-header {
@@ -24,6 +26,7 @@ a:hover.page-link {
   background-color: $link-color;
 }
 
+// Styling links
 a {
   outline: none;
   text-decoration: none;
@@ -34,14 +37,24 @@ a:link {
   color: $link-color;
 }
 
-a:visited {
-  color: $link-color;
-}
-
 a:hover {
   background: $code-background;
 }
 
+// Special cases for link in the header
+a:link.site-title {
+  color: $site-title-color;
+}
+
+a:hover.site-title {
+  background-color: $link-color;
+}
+
+a:hover.page-link {
+  background-color: $link-color;
+}
+
+// Background color for code snippets
 pre, code {
   background-color: $code-background;
 }
