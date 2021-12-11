@@ -5,29 +5,26 @@ date:   2021-12-08
 tags: ubuntu, linux, cli, macOS
 ---
 
-Recently I wanted to install fresh Ubuntu LTS on my other laptop. Official documentation has a [tutorial][ubuntu-official-tutorial] how to prepare a bootable USB stick on macOS - nice, that's exactly what I need!
+Recently I wanted to install fresh Ubuntu LTS on my other laptop. Official documentation has a [tutorial][ubuntu-official-tutorial] how to prepare a bootable USB stick on macOS, however in the second step it requires installation of another application. 
 
+Here's how to do it without installing Etcher, using only standard tools.
 1. Format USB drive with the standard application `Disk Utility`.
-2. Install and run Etcher - eeh! I don't want to install anything for this!
-
 
 <!--more-->
 
-So if you are looking how to create a bootable USB drive, here are my notes.
-
-1\. Find out the name of your disk (USB drive)
+2\. Find out the name of your disk (USB drive)
 
 {% highlight bash %}
 $ diskutil list
 {% endhighlight %}
 
-2\. You need to unmount this disk (but do not eject!). In my case the name of the disk is `disk2`, be careful here
+3\. You need to unmount this disk (but do not eject!). In my case the name of the disk is `disk2`, be careful here
 
 {% highlight bash %}
 $ diskutil unmountDisk /dev/disk2
 {% endhighlight %}
 
-3\. Navigate to the directory where you have your ISO image. Now write this to the USB stick. Be extra careful here and check the name of the disk that corresponds to your USB stick.
+4\. Navigate to the directory where you have your ISO image. Now write this to the USB stick. Be extra careful here and check the name of the disk that corresponds to your USB stick.
 
 {% highlight bash %}
 $ sudo dd if=ubuntu-20.04.3-desktop-amd64.iso of=/dev/disk2 bs=1m
