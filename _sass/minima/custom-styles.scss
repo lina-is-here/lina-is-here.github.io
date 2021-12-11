@@ -3,6 +3,27 @@
   font-size: small;
 }
 
+.site-title {
+  font-size: xx-large;
+}
+
+a:hover.site-title {
+  background-color: $link-color;
+}
+
+.site-nav .page-link {
+  color: white;
+}
+
+a:hover.page-link {
+  background-color: $link-color;
+}
+
+.site-header {
+  border-top: 0;
+  background-color: $link-color;
+}
+
 a {
   outline: none;
   text-decoration: none;
@@ -18,7 +39,6 @@ a:visited {
 }
 
 a:hover {
-  border-bottom: 1px solid;
   background: $code-background;
 }
 
