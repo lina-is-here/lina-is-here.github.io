@@ -21,7 +21,7 @@
 title: Lina's random notes
 author:
   name: Angelina Vasileva
-  email: contact@lina-is-here.com
+  email: hi@lina-is-here.com
 description: >- # this means to ignore newlines until "baseurl:"
     A place for my notes to share with others.
 baseurl: "" # the subpath of your site, e.g. /blog
