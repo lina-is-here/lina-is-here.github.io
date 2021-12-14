@@ -45,6 +45,9 @@ plugins:
 # Google Analytics
 google_analytics: G-FBCQY9M93K
 
+# Buy Me a Coffee link
+buy_me_a_coffee: https://www.buymeacoffee.com/linaishere
+
 # Exclude from processing.
 # The following items will not be processed, by default.
 # Any item listed under the `exclude:` key here will be automatically added to
