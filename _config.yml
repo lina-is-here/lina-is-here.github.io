@@ -35,7 +35,7 @@ minima:
 remote_theme: jekyll/minima
 show_excerpts: true
 excerpt_separator: <!--more-->
-paginate: 2
+paginate: 10
 plugins:
   - jekyll-feed
   - jekyll-remote-theme
