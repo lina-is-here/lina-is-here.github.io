@@ -8,6 +8,7 @@ group :jekyll_plugins do
   gem "jekyll-remote-theme", "~> 0.4.3"
   gem "jekyll-seo-tag", "~> 2.7.1"
   gem "jekyll-paginate", "~> 1.1.0"
+  gem "jekyll-sitemap", "~> 1.4.0"
 end
 
 # Windows and JRuby does not include zoneinfo files, so bundle the tzinfo-data gem
