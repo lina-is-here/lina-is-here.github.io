@@ -2,7 +2,7 @@
 layout: post
 title:  "How to generate a self-signed SSL certificate and use it in Nginx in docker-compose"
 date:   2022-01-19
-tags: linux, cli, openssl, ssl, nginx, docker-compose
+tags: [linux, cli, openssl, ssl, nginx, docker-compose]
 ---
 
 While implementing barcode scanning using [QuaggaJS][quaggajs-repo], I realized that I have to have a secure origin 

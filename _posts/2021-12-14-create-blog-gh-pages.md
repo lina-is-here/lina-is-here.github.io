@@ -2,7 +2,7 @@
 layout: post
 title:  "How to create a blog with Jekyll 4 and host it for free on GitHub"
 date:   2021-12-14
-tags: jekyll, blog, github, website
+tags: [jekyll, blog, github, website]
 ---
 
 Today I want to note down how I created this very blog using GitHub Pages and Jekyll 4 – a static site generator.

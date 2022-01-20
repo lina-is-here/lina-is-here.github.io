@@ -2,7 +2,7 @@
 layout: post
 title:  "How to select dropdown value based on another dropdown using django-autocomplete-light"
 date:   2022-01-05
-tags: django, django-autocomplete-light, dal, select2, jquery, ajax
+tags: [django, django-autocomplete-light, dal, select2, jquery, ajax]
 ---
 
 I recently fell in love with the Django framework and started to implement an app that I really need –

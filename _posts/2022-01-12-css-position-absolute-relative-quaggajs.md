@@ -2,7 +2,7 @@
 layout: post
 title:  "How to overlay one HTML element over another using CSS (QuaggaJS barcode scanner)"
 date:   2022-01-12
-tags: html, css, quaggajs
+tags: [html, css, quaggajs]
 ---
 
 I was looking for a tool that can help me to implement barcode scanning for my [Home Inventory app][home-inventory-repo].

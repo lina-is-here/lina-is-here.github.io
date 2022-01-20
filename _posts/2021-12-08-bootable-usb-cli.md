@@ -2,7 +2,7 @@
 layout: post
 title:  "How to prepare a bootable USB stick with Ubuntu on macOS using CLI"
 date:   2021-12-08
-tags: ubuntu, linux, cli, macOS
+tags: [ubuntu, linux, cli, macOS]
 ---
 
 Recently I wanted to install fresh Ubuntu LTS on my other laptop. Official documentation has a [tutorial][ubuntu-official-tutorial] how to prepare a bootable USB stick on macOS, however in the second step it requires installation of another application. 

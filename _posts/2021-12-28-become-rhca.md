@@ -2,7 +2,7 @@
 layout: post
 title:  "How to become a Red Hat Certified Architect (RHCA)"
 date:   2021-12-28
-tags: rhca, certification, linux
+tags: [rhca, certification, linux]
 ---
 
 This year I accomplished one of my goals – [I became Red Hat Certified Architect 

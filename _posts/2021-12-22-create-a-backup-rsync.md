@@ -2,7 +2,7 @@
 layout: post
 title:  "How to create a backup using rsync"
 date:   2021-12-22
-tags: linux, cli
+tags: [linux, cli]
 ---
 
 Sometimes I want to create a backup of my data on another server. 

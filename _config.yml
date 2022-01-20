@@ -42,12 +42,17 @@ plugins:
   - jekyll-seo-tag
   - jekyll-paginate
   - jekyll-sitemap
+  - jekyll/tagging
 
 # Google Analytics
 google_analytics: G-FBCQY9M93K
 
 # Buy Me a Coffee link
 buy_me_a_coffee: https://www.buymeacoffee.com/linaishere
+
+# jekyll-tagging settings
+tag_page_layout: tag_page
+tag_page_dir: tag
 
 # Exclude from processing.
 # The following items will not be processed, by default.
