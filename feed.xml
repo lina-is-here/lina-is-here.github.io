@@ -1,0 +1,781 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://notes.lina-is-here.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://notes.lina-is-here.com/" rel="alternate" type="text/html" /><updated>2022-08-04T19:27:30+00:00</updated><id>https://notes.lina-is-here.com/feed.xml</id><title type="html">Lina’s random notes</title><subtitle>A place for my notes to share with others.</subtitle><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><entry><title type="html">How to use Schemathesis to test Flask API in GitHub Actions</title><link href="https://notes.lina-is-here.com/2022/08/04/schemathesis-docker-compose.html" rel="alternate" type="text/html" title="How to use Schemathesis to test Flask API in GitHub Actions" /><published>2022-08-04T00:00:00+00:00</published><updated>2022-08-04T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2022/08/04/schemathesis-docker-compose</id><content type="html" xml:base="https://notes.lina-is-here.com/2022/08/04/schemathesis-docker-compose.html"><![CDATA[<p>It’s been definitely more than a year since I first discovered <a href="https://github.com/schemathesis/schemathesis">Schemathesis</a>.
+I ran it against one API and got overwhelming amount of errors. Recently I re-discovered it again and something just clicked!</p>
+
+<p>I started to implement fuzzy testing for <a href="https://github.com/ibutsu/ibutsu-server">Ibutsu</a>, which is basically an API written 
+in Flask (python).</p>
+
+<p>The application consists of several parts: frontend, backend, worker, postgres and redis. So how can we run it, run 
+fuzzy testing against it and do it all in each PR in GitHub actions?</p>
+
+<!--more-->
+
+<p><strong>1. First, let’s create a docker-compose file with all the necessary components.</strong></p>
+
+<p>For example, it doesn’t make sense to run frontend, because it’s not under test in fuzzy testing.</p>
+
+<p>It’s common, that the docker-compose file already exists, so we just need to make some adjustments in the new file.</p>
+
+<p><strong>2. Next, add the new container to docker-compose.</strong></p>
+
+<p>Fuzzy testing will be performed from this container. I call it <code class="language-plaintext highlighter-rouge">api-tests</code> (see example in 
+<a href="https://github.com/ibutsu/ibutsu-server/blob/master/docker-compose-fuzz.yml">Ibutsu repo</a>). 
+This container also requires a Dockerfile. The Dockerfile is very simple, it is an image with installed 
+schemathesis, and a script that performs the testing, see <a href="https://github.com/ibutsu/ibutsu-server/blob/master/backend/docker/Dockerfile.fuzz_testing">example</a>.</p>
+
+<p>The script should wait for the API to be available (otherwise it will immediately fail and container will exit) and 
+run the test command. In the case of Ibutsu, it also acquires a valid token, so it can be later included in all 
+requests, see <a href="https://github.com/ibutsu/ibutsu-server/blob/master/backend/docker/start_fuzz_testing.sh">here</a>.</p>
+
+<p><strong>3. Test it locally.</strong></p>
+
+<p>Before proceeding to GitHub actions, let’s verify it works as expected.</p>
+
+<p>Run the new docker-compose configuration locally:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">docker-compose <span class="nt">-f</span> docker-compose-fuzz.yml up</code></pre></figure>
+
+<p>Verify it works as expected and tests are performed.</p>
+
+<p><strong>4. Once it works locally, create a GitHub workflow.</strong></p>
+
+<p>In the root of your project, create a file <code class="language-plaintext highlighter-rouge">.github/workflows/api_test.yaml</code>.</p>
+
+<p>The job does just two things: checks out the repo and then runs docker-compose. You can check how it works in 
+<a href="https://github.com/ibutsu/ibutsu-server/blob/master/.github/workflows/api_tests.yaml">Ibutsu</a>.</p>
+
+<p><strong>5. Fix the errors!</strong></p>
+
+<p>Everything should work by now, and the only part that could be “not perfect” is the API under test :D</p>
+
+<p>P.S. I also highly recommend going through <a href="https://schemathesis.readthedocs.io/en/stable/">Schemathesis documentation</a> 
+to find all the possible options and enhance your tests and API. Happy fuzzing!</p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="schemathesis" /><category term="api" /><category term="testing" /><category term="docker" /><category term="docker-compose" /><category term="github actions" /><summary type="html"><![CDATA[It’s been definitely more than a year since I first discovered Schemathesis. I ran it against one API and got overwhelming amount of errors. Recently I re-discovered it again and something just clicked! I started to implement fuzzy testing for Ibutsu, which is basically an API written in Flask (python). The application consists of several parts: frontend, backend, worker, postgres and redis. So how can we run it, run fuzzy testing against it and do it all in each PR in GitHub actions?]]></summary></entry><entry><title type="html">How to create automatic notifications in AWS SQS when the new object is added to S3 bucket</title><link href="https://notes.lina-is-here.com/2022/03/09/aws-s3-notifications-sqs.html" rel="alternate" type="text/html" title="How to create automatic notifications in AWS SQS when the new object is added to S3 bucket" /><published>2022-03-09T00:00:00+00:00</published><updated>2022-03-09T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2022/03/09/aws-s3-notifications-sqs</id><content type="html" xml:base="https://notes.lina-is-here.com/2022/03/09/aws-s3-notifications-sqs.html"><![CDATA[<p>AWS has great documentation, but I want to document some things that were easy to miss when I configured notifications 
+to Amazon SQS (Simple Queue Service) from S3 (Simple Storage Service) bucket.</p>
+
+<p>To achieve this nice flow of notifications, the first thing to do is:</p>
+
+<p><strong>1. Create S3 bucket.</strong></p>
+
+<p>There are several ways to do it. Probably, the easiest is using AWS console.
+Navigate to S3 service and click on “Create bucket”.</p>
+
+<p><strong>2. Create SQS queue.</strong></p>
+
+<!--more-->
+<p>In AWS console, navigate to SQS service and click “Create queue”.</p>
+
+<p><strong>IMPORTANT:</strong> Create a <strong>standard queue</strong>, S3 notifications don’t work with FIFO queues! See the 
+<a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-compatibility.html">compatibility section</a> 
+for FIFO queues in the official documentation.</p>
+
+<p><strong>3. Modify access policy for the queue.</strong></p>
+
+<p>Navigate to the “Access policy” tab of the SQS queue created above. Click “Edit”.</p>
+
+<p>Add the following policy:</p>
+
+<figure class="highlight"><pre><code class="language-json" data-lang="json"><span class="p">{</span><span class="w">
+  </span><span class="nl">"Version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2008-10-17"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"__default_policy_ID"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Statement"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"Sid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"__owner_statement"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Effect"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Allow"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Principal"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"Service"</span><span class="p">:</span><span class="w"> </span><span class="s2">"s3.amazonaws.com"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"Action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SQS:*"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arn:aws:sqs:{region}:{account_ID}:{queue_name}"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Condition"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"StringEquals"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"aws:SourceAccount"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{account_ID}"</span><span class="w">
+        </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"ArnLike"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"aws:SourceArn"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arn:aws:s3:*:*:{bucket_name}"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span></code></pre></figure>
+
+<p>Resource ARN (for <code class="language-plaintext highlighter-rouge">"Resource": "arn:aws:sqs:{region}:{account_ID}:{queue_name}"</code>) can be found on the Details page of 
+the created queue.</p>
+
+<p><strong>4. Add notifications for the S3 bucket.</strong></p>
+
+<p>Navigate to the bucket’s Detail page.</p>
+
+<p>Click on “Properties” tab.</p>
+
+<p>In the “Event notifications” section click “Create event notification”.</p>
+
+<p>Choose the name, desired notifications and choose the created SQS queue.</p>
+
+<p>Save changes.</p>
+
+<p><strong>That’s it!</strong> Notifications from S3 bucket are now flowing to the SQS queue.</p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="aws" /><category term="s3" /><category term="sqs" /><summary type="html"><![CDATA[AWS has great documentation, but I want to document some things that were easy to miss when I configured notifications to Amazon SQS (Simple Queue Service) from S3 (Simple Storage Service) bucket. To achieve this nice flow of notifications, the first thing to do is: 1. Create S3 bucket. There are several ways to do it. Probably, the easiest is using AWS console. Navigate to S3 service and click on “Create bucket”. 2. Create SQS queue.]]></summary></entry><entry><title type="html">How to fix positioning of dropdowns when using django-autocomplete-light and crispy forms</title><link href="https://notes.lina-is-here.com/2022/02/13/fix-positioning-dal-crispy-forms.html" rel="alternate" type="text/html" title="How to fix positioning of dropdowns when using django-autocomplete-light and crispy forms" /><published>2022-02-13T00:00:00+00:00</published><updated>2022-02-13T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2022/02/13/fix-positioning-dal-crispy-forms</id><content type="html" xml:base="https://notes.lina-is-here.com/2022/02/13/fix-positioning-dal-crispy-forms.html"><![CDATA[<p><a href="https://django-autocomplete-light.readthedocs.io/en/master/">Django-autocomplete-light</a> library provides a great way 
+to implement select widget with autocomplete feature in Django forms. I used it, and I am very happy with the result. 
+But my form was still pretty ugly and the obvious and popular solution is to fix it with 
+<a href="https://django-crispy-forms.readthedocs.io/en/latest/">django-crispy-forms</a> library. I love it! It’s easily configurable 
+in the form class, and the only thing in the template to render the form is  <code class="language-plaintext highlighter-rouge">{% crispy form %}</code> . Nice and clean!</p>
+
+<p>However, nothing is that easy, right? After adding {% crispy %} tag, my form became messier than ever. Autocomplete 
+selects were totally different from other fields in the form.</p>
+
+<p>This is how the ugly form looks like:</p>
+
+<p><img src="/assets/img/2022-02-13-fix-positioning-dal-crispy-forms/before.png" alt="Ugly form" title="Ugly form" /></p>
+
+<!--more-->
+
+<h3 id="solution">Solution</h3>
+
+<p>I have spent quite some time to fix the CSS, so if I ever encounter this problem again,
+here is the solution:</p>
+
+<figure class="highlight"><pre><code class="language-css" data-lang="css"><span class="nc">.row</span> <span class="p">{</span>
+    <span class="py">--bs-gutter-x</span><span class="p">:</span> <span class="m">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2</span> <span class="nc">.select2-container</span> <span class="p">{</span>
+    <span class="nl">height</span><span class="p">:</span> <span class="m">36px</span> <span class="cp">!important</span><span class="p">;</span>
+    <span class="nl">min-width</span><span class="p">:</span> <span class="m">0</span> <span class="cp">!important</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2-container</span> <span class="nc">.select2-selection--single</span> <span class="p">{</span>
+    <span class="nl">height</span><span class="p">:</span> <span class="m">36px</span> <span class="cp">!important</span><span class="p">;</span>
+    <span class="nl">min-width</span><span class="p">:</span> <span class="m">0</span> <span class="cp">!important</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2-selection__choice</span><span class="p">{</span>
+    <span class="nl">margin-top</span><span class="p">:</span> <span class="m">0</span> <span class="cp">!important</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2-container</span> <span class="p">{</span>
+    <span class="nl">min-width</span><span class="p">:</span> <span class="m">0</span> <span class="cp">!important</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2-selection__arrow</span> <span class="p">{</span>
+    <span class="nl">display</span><span class="p">:</span> <span class="nb">none</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2-container</span> <span class="nc">.select2-selection--single</span> <span class="nc">.select2-selection__rendered</span> <span class="p">{</span>
+    <span class="nl">padding-left</span><span class="p">:</span> <span class="m">0</span> <span class="cp">!important</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2-container--default</span> <span class="nc">.select2-selection--single</span> <span class="p">{</span>
+    <span class="nl">border</span><span class="p">:</span> <span class="m">1px</span> <span class="nb">solid</span> <span class="m">#ced4da</span><span class="p">;</span>
+    <span class="nl">border-radius</span><span class="p">:</span> <span class="m">0.25rem</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.select2-container--default</span> <span class="nc">.select2-selection--single</span> <span class="nc">.select2-selection__rendered</span> <span class="p">{</span>
+    <span class="nl">line-height</span><span class="p">:</span> <span class="m">24px</span> <span class="cp">!important</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>The nice form as the result:</p>
+
+<p><img src="/assets/img/2022-02-13-fix-positioning-dal-crispy-forms/after.png" alt="Nice form" title="Nice form" /></p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="django" /><category term="django-autocomplete-light" /><category term="dal" /><category term="css" /><category term="crispy-forms" /><summary type="html"><![CDATA[Django-autocomplete-light library provides a great way to implement select widget with autocomplete feature in Django forms. I used it, and I am very happy with the result. But my form was still pretty ugly and the obvious and popular solution is to fix it with django-crispy-forms library. I love it! It’s easily configurable in the form class, and the only thing in the template to render the form is {% crispy form %} . Nice and clean! However, nothing is that easy, right? After adding {% crispy %} tag, my form became messier than ever. Autocomplete selects were totally different from other fields in the form. This is how the ugly form looks like:]]></summary></entry><entry><title type="html">How to create a Django model where only one row can have a specific value</title><link href="https://notes.lina-is-here.com/2022/01/26/django-only-one-row-specific-value.html" rel="alternate" type="text/html" title="How to create a Django model where only one row can have a specific value" /><published>2022-01-26T00:00:00+00:00</published><updated>2022-01-26T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2022/01/26/django-only-one-row-specific-value</id><content type="html" xml:base="https://notes.lina-is-here.com/2022/01/26/django-only-one-row-specific-value.html"><![CDATA[<p>In my <a href="https://github.com/lina-is-here/home_inventory">Home Inventory app</a> I implemented the model for Measurement and each Item has its own 
+Measurement.</p>
+
+<p>Later I got tired of selecting measurement value for each new item in the UI as in 99% cases I selected “pcs”.
+I didn’t want to hardcode initial value, so I started to investigate: how to allow only one row to have a 
+specific field value? Or, in my case, how to create a Django model where only one row can have value True?</p>
+
+<!--more-->
+
+<h3 id="solution">Solution</h3>
+
+<p>The solution is to add unique constraint on that field. Here’s my Measurement model:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">class</span> <span class="nc">Measurement</span><span class="p">(</span><span class="n">models</span><span class="p">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="s">"""Model representing measurement of the item, e.g. Pieces"""</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="p">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="s">"Measurement unit"</span><span class="p">)</span>
+    <span class="n">is_default</span> <span class="o">=</span> <span class="n">models</span><span class="p">.</span><span class="n">BooleanField</span><span class="p">(</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+        <span class="n">help_text</span><span class="o">=</span><span class="s">"If True, it's default measurement for new item."</span>
+        <span class="s">"Only one measurement can be default."</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">"name"</span><span class="p">]</span>
+        <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">models</span><span class="p">.</span><span class="n">UniqueConstraint</span><span class="p">(</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s">"is_default"</span><span class="p">],</span>
+                <span class="n">name</span><span class="o">=</span><span class="s">"Only one measurement can be default"</span><span class="p">,</span>
+                <span class="n">condition</span><span class="o">=</span><span class="n">models</span><span class="p">.</span><span class="n">Q</span><span class="p">(</span><span class="n">is_default</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">]</span></code></pre></figure>
+
+<p>So the constraint</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">models</span><span class="p">.</span><span class="n">UniqueConstraint</span><span class="p">(</span>
+                <span class="n">fields</span><span class="o">=</span><span class="p">[</span><span class="s">"is_default"</span><span class="p">],</span>
+                <span class="n">name</span><span class="o">=</span><span class="s">"Only one measurement can be default"</span><span class="p">,</span>
+                <span class="n">condition</span><span class="o">=</span><span class="n">models</span><span class="p">.</span><span class="n">Q</span><span class="p">(</span><span class="n">is_default</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">]</span></code></pre></figure>
+
+<p>makes it possible for only one measurement to have <code class="language-plaintext highlighter-rouge">is_default</code> value set to True.</p>
+
+<h3 id="make-it-work-in-the-admin">Make it work in the admin</h3>
+
+<p>Although the solution works, it’s also nice to make it foolproof in the admin UI.</p>
+
+<p>To achieve that, I wrote the following code:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="o">@</span><span class="n">admin</span><span class="p">.</span><span class="n">register</span><span class="p">(</span><span class="n">Measurement</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MeasurementAdmin</span><span class="p">(</span><span class="n">RelatedFieldAdmin</span><span class="p">):</span>
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s">"name"</span><span class="p">,)</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s">"name"</span><span class="p">,</span>
+        <span class="s">"is_default"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_readonly_fields</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="s">"""
+        Make 'is_default' readonly if some measurement is already marked as default
+        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="p">.</span><span class="n">is_default</span> <span class="ow">and</span> <span class="n">Measurement</span><span class="p">.</span><span class="n">objects</span><span class="p">.</span><span class="nb">all</span><span class="p">().</span><span class="nb">filter</span><span class="p">(</span><span class="n">is_default</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">readonly_fields</span> <span class="o">+</span> <span class="p">(</span><span class="s">"is_default"</span><span class="p">,)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">readonly_fields</span></code></pre></figure>
+
+<p>Overriding <code class="language-plaintext highlighter-rouge">get_readonly_fields</code> makes it impossible to even try to select addition measurement as default.
+In case one measurement is already a default measurement, for all other measurements <code class="language-plaintext highlighter-rouge">is_default</code> field is not editable.</p>
+
+<h3 id="apply-default-value-in-the-form">Apply default value in the form</h3>
+
+<p>I wanted to display the default value in the form. In the view that renders that form, I first request that value.</p>
+
+<p>However, there’s no requirement for default value to exist, so this case should be handled as well.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">try</span><span class="p">:</span>
+    <span class="n">default_measurement</span> <span class="o">=</span> <span class="n">Measurement</span><span class="p">.</span><span class="n">objects</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">is_default</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">Measurement</span><span class="p">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+    <span class="n">default_measurement</span> <span class="o">=</span> <span class="s">""</span></code></pre></figure>
+
+<p>Then I simply pass <code class="language-plaintext highlighter-rouge">initial</code> arg to the form:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">initial</span><span class="o">=</span><span class="p">{</span><span class="s">"measurement"</span><span class="p">:</span> <span class="n">default_measurement</span><span class="p">},</span></code></pre></figure>
+
+<p>and the default measurement value is displayed in measurement field for all new items. That’s it!</p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="django" /><summary type="html"><![CDATA[In my Home Inventory app I implemented the model for Measurement and each Item has its own Measurement. Later I got tired of selecting measurement value for each new item in the UI as in 99% cases I selected “pcs”. I didn’t want to hardcode initial value, so I started to investigate: how to allow only one row to have a specific field value? Or, in my case, how to create a Django model where only one row can have value True?]]></summary></entry><entry><title type="html">How to generate a self-signed SSL certificate and use it in Nginx in docker-compose</title><link href="https://notes.lina-is-here.com/2022/01/19/self-signed-certificates-nginx.html" rel="alternate" type="text/html" title="How to generate a self-signed SSL certificate and use it in Nginx in docker-compose" /><published>2022-01-19T00:00:00+00:00</published><updated>2022-01-19T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2022/01/19/self-signed-certificates-nginx</id><content type="html" xml:base="https://notes.lina-is-here.com/2022/01/19/self-signed-certificates-nginx.html"><![CDATA[<p>While implementing barcode scanning using <a href="https://github.com/serratus/quaggaJS">QuaggaJS</a>, I realized that I have to have a secure origin 
+in order for the live scanning feature to work on mobile devices. Exactly, as written in QuaggaJS README file:</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text">Important: Accessing getUserMedia requires a secure origin in most browsers, 
+meaning that http:// can only be used on localhost. 
+All other hostnames need to be served via https://. </code></pre></figure>
+
+<p>The simplest thing to do for the development environment is to generate a self-signed certificate.</p>
+
+<!--more-->
+
+<h3 id="generating-self-signed-certificate">Generating self-signed certificate</h3>
+
+<p>Only one command is needed:</p>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>openssl req <span class="nt">-newkey</span> rsa:2048 <span class="nt">-nodes</span> <span class="nt">-keyout</span> domain.key <span class="nt">-x509</span> <span class="nt">-days</span> 365 <span class="nt">-out</span> domain.crt</code></pre></figure>
+
+<p>The command will prompt for the information to include in the certificate request. You can fill them as you wish,
+only the <code class="language-plaintext highlighter-rouge">Common Name (eg, fully qualified host name)</code> is required to generate the certificate.</p>
+
+<h3 id="nginx-config">Nginx config</h3>
+
+<p>The following should be in the nginx config:</p>
+
+<figure class="highlight"><pre><code class="language-nginx" data-lang="nginx"><span class="k">server</span> <span class="p">{</span>
+    <span class="kn">listen</span>      <span class="mi">443</span> <span class="s">ssl</span> <span class="s">http2</span><span class="p">;</span>
+    <span class="kn">server_tokens</span> <span class="no">off</span><span class="p">;</span>
+    <span class="kn">ssl_certificate</span> <span class="nc">ssl/domain</span><span class="s">.crt</span><span class="p">;</span>
+    <span class="kn">ssl_certificate_key</span> <span class="nc">ssl/domain</span><span class="s">.key</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Check the path for <code class="language-plaintext highlighter-rouge">ssl_certificate</code> and <code class="language-plaintext highlighter-rouge">ssl_certificate_key</code> in your configuration.
+The suggested path works if the certificates directory is mounted to <code class="language-plaintext highlighter-rouge">/etc/nginx/ssl</code> as described below in 
+docker-compose config.</p>
+
+<h3 id="docker-compose-config">Docker-compose config</h3>
+
+<p>In order for the certificate to work, add the following volume (assuming <code class="language-plaintext highlighter-rouge">domain.crt</code> and <code class="language-plaintext highlighter-rouge">domain.key</code> are located in
+ the <code class="language-plaintext highlighter-rouge">certs</code> directory at the root of the project) to the nginx container:</p>
+
+<figure class="highlight"><pre><code class="language-yml" data-lang="yml"><span class="na">volumes</span><span class="pi">:</span><span class="err">
+</span>
+  <span class="pi">-</span> <span class="s">./certs:/etc/nginx/ssl</span></code></pre></figure>
+
+<p>And don’t forget to change the port:</p>
+
+<figure class="highlight"><pre><code class="language-yml" data-lang="yml"><span class="na">ports</span><span class="pi">:</span><span class="err">
+</span>
+  <span class="pi">-</span> <span class="s">8443:443</span></code></pre></figure>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="linux" /><category term="cli" /><category term="openssl" /><category term="ssl" /><category term="nginx" /><category term="docker-compose" /><summary type="html"><![CDATA[While implementing barcode scanning using QuaggaJS, I realized that I have to have a secure origin in order for the live scanning feature to work on mobile devices. Exactly, as written in QuaggaJS README file: Important: Accessing getUserMedia requires a secure origin in most browsers, meaning that http:// can only be used on localhost. All other hostnames need to be served via https://. The simplest thing to do for the development environment is to generate a self-signed certificate.]]></summary></entry><entry><title type="html">How to overlay one HTML element over another using CSS (QuaggaJS barcode scanner)</title><link href="https://notes.lina-is-here.com/2022/01/12/css-position-absolute-relative-quaggajs.html" rel="alternate" type="text/html" title="How to overlay one HTML element over another using CSS (QuaggaJS barcode scanner)" /><published>2022-01-12T00:00:00+00:00</published><updated>2022-01-12T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2022/01/12/css-position-absolute-relative-quaggajs</id><content type="html" xml:base="https://notes.lina-is-here.com/2022/01/12/css-position-absolute-relative-quaggajs.html"><![CDATA[<p>I was looking for a tool that can help me to implement barcode scanning for my <a href="https://github.com/lina-is-here/home_inventory">Home Inventory app</a>.</p>
+
+<p>After considering several options, I decided to proceed with the JavaScript library <a href="https://github.com/serratus/quaggaJS">QuaggaJS</a>.
+In the repository they have examples, including the example of live barcode detection. I slightly modified it and 
+added it to my project. It worked beautifully, except that the barcode locator (rectangle around the detected barcode) 
+was in a completely different place!</p>
+
+<p>Here’s how the problem looks like:</p>
+
+<!--more-->
+
+<p><img src="/assets/img/2022-01-12-css-position-absolute-relative-quaggajs/wrong_position.png" alt="Barcode locator in the wrong place" title="Barcode locator in the wrong place" /></p>
+
+<p><em>The green rectangle is not displayed around the barcode, but in some white space below the video stream!</em></p>
+
+<p>Long story short: I missed the CSS declaration in the <a href="https://github.com/serratus/quaggaJS/blob/master/example/live_w_locator.html#L12">example file</a> and the correlated 
+<a href="https://github.com/serratus/quaggaJS/blob/master/example/css/styles.css">CSS file</a>.</p>
+
+<p>But the good news is, this problem can be fixed in much less CSS!</p>
+
+<p>First, this part has to be present in the HTML file:</p>
+
+<figure class="highlight"><pre><code class="language-html" data-lang="html"><span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"interactive"</span> <span class="na">class=</span><span class="s">"viewport"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;video</span> <span class="na">class=</span><span class="s">"videoCamera"</span> <span class="na">autoplay</span> <span class="na">preload=</span><span class="s">"auto"</span> <span class="na">src=</span><span class="s">""</span> <span class="na">muted</span> <span class="na">playsinline</span><span class="nt">&gt;&lt;/video&gt;</span>
+    <span class="nt">&lt;canvas</span> <span class="na">class=</span><span class="s">"drawingBuffer"</span><span class="nt">&gt;&lt;/canvas&gt;</span>
+<span class="nt">&lt;/div&gt;</span></code></pre></figure>
+
+<p>And then, add this to your CSS file:</p>
+
+<figure class="highlight"><pre><code class="language-css" data-lang="css"><span class="nc">.viewport</span> <span class="p">{</span>
+    <span class="nl">position</span><span class="p">:</span> <span class="nb">relative</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nc">.drawingBuffer</span> <span class="p">{</span>
+  <span class="nl">position</span><span class="p">:</span> <span class="nb">absolute</span><span class="p">;</span>
+  <span class="nl">top</span><span class="p">:</span> <span class="m">0</span><span class="p">;</span>
+  <span class="nl">left</span><span class="p">:</span> <span class="m">0</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<h3 id="explanation">Explanation</h3>
+<p>The elements will overlay if the parent element has <code class="language-plaintext highlighter-rouge">position: relative</code> and its child element has <code class="language-plaintext highlighter-rouge">position: absolute</code> 
+attribute.</p>
+
+<h3 id="the-result">The result</h3>
+<p><img src="/assets/img/2022-01-12-css-position-absolute-relative-quaggajs/correct_position.png" alt="Barcode locator in the correct place" title="Barcode locator in the correct place" />
+<em>The locator is displayed on the actual video stream (it’s in the process of locating, so not covering the whole barcode here).</em></p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="html" /><category term="css" /><category term="quaggajs" /><summary type="html"><![CDATA[I was looking for a tool that can help me to implement barcode scanning for my Home Inventory app. After considering several options, I decided to proceed with the JavaScript library QuaggaJS. In the repository they have examples, including the example of live barcode detection. I slightly modified it and added it to my project. It worked beautifully, except that the barcode locator (rectangle around the detected barcode) was in a completely different place! Here’s how the problem looks like:]]></summary></entry><entry><title type="html">How to select dropdown value based on another dropdown using django-autocomplete-light</title><link href="https://notes.lina-is-here.com/2022/01/05/django-dal-dropdown-ajax.html" rel="alternate" type="text/html" title="How to select dropdown value based on another dropdown using django-autocomplete-light" /><published>2022-01-05T00:00:00+00:00</published><updated>2022-01-05T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2022/01/05/django-dal-dropdown-ajax</id><content type="html" xml:base="https://notes.lina-is-here.com/2022/01/05/django-dal-dropdown-ajax.html"><![CDATA[<p>I recently fell in love with the Django framework and started to implement an app that I really need –
+<a href="https://github.com/lina-is-here/home_inventory">Home Inventory</a>, that helps me to track items at home (mostly food) and use them before 
+the expiry date.</p>
+
+<p>So when I wanted to implement autocomplete for the product name when adding a new item to my inventory,
+I found an awesome <a href="https://github.com/yourlabs/django-autocomplete-light">django-autocomplete-light</a> library. It immediately solved my problem but of course I
+wanted more – select the value of Category dropdown based on the Product name.</p>
+
+<!--more-->
+
+<p>To make things clear, that’s the database schema of the application.</p>
+
+<p><img src="/assets/img/2022-01-05-django-dal-dropdown-ajax/inventory_db_schema.png" alt="Home Inventory database schema" title="Home Inventory database schema" /></p>
+
+<p>The goal was to show category during adding of the new item. The category would be a product category, but it should be
+possible to change it. Also, it should be possible to add new product and chose category for it if that product does not
+yet exist.</p>
+
+<p>It is clear things have to be done on the frontend.</p>
+
+<p>The original jQuery that is used for autocomplete can be found in <a href="https://django-autocomplete-light.readthedocs.io/en/master/tutorial.html#using-autocompletes-outside-the-admin">django-autocomplete-light documentation</a>.</p>
+
+<p>To update the Category dropdown based on the selected Product, I added another function there:</p>
+
+<figure class="highlight"><pre><code class="language-js" data-lang="js"><span class="c1">// update category based on the product name
+</span>
+<span class="nx">$</span><span class="p">(</span><span class="dl">'</span><span class="s1">#id_name</span><span class="dl">'</span><span class="p">).</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">select2:select</span><span class="dl">'</span><span class="p">,</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">product_name</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">#select2-id_name-container</span><span class="dl">"</span><span class="p">).</span><span class="nx">text</span><span class="p">()</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">ajax</span>
+    <span class="p">({</span>
+        <span class="na">type</span><span class="p">:</span> <span class="dl">"</span><span class="s2">GET</span><span class="dl">"</span><span class="p">,</span>
+        <span class="na">url</span><span class="p">:</span> <span class="s2">`/product/</span><span class="p">${</span><span class="nx">product_name</span><span class="p">}</span><span class="s2">`</span><span class="p">,</span>
+        <span class="na">success</span><span class="p">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">category_response</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">category</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">category_response</span><span class="p">)</span>
+            <span class="nx">$</span><span class="p">(</span><span class="dl">"</span><span class="s2">#id_category</span><span class="dl">"</span><span class="p">).</span><span class="nx">select2</span><span class="p">(</span><span class="dl">"</span><span class="s2">trigger</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">select</span><span class="dl">"</span><span class="p">,</span> <span class="p">{</span>
+                <span class="na">data</span><span class="p">:</span> <span class="p">{</span><span class="na">id</span><span class="p">:</span> <span class="nx">category</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="na">text</span><span class="p">:</span> <span class="nx">category</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span>
+            <span class="p">});</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+<span class="p">});</span></code></pre></figure>
+
+<h3 id="explanation">Explanation</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">#id_name</code> is the locator of the first dropdown.</li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">select2:select</code> is the event on which the function is triggered. More on the select2 events can be
+found in <a href="https://select2.org/programmatic-control/events">the select2 documentation</a>.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">$("#select2-id_name-container").text()</code> gets the selected value. On the same line it is assigned to
+<code class="language-plaintext highlighter-rouge">product_name</code> variable.</p>
+  </li>
+  <li>
+    <p><code class="language-plaintext highlighter-rouge">$.ajax</code> part makes a request to get the category of the selected product.</p>
+  </li>
+  <li>
+    <p>On success, it selects the value in the Category dropdown (selected by id <code class="language-plaintext highlighter-rouge">#id_category</code>).</p>
+  </li>
+  <li>It’s important to trigger <code class="language-plaintext highlighter-rouge">select</code> event using <code class="language-plaintext highlighter-rouge">.select2("trigger", "select"...</code> and not just fill
+in the text!</li>
+</ul>
+
+<h3 id="demo">Demo</h3>
+<p><img src="/assets/img/2022-01-05-django-dal-dropdown-ajax/demo.gif" alt="Home Inventory database schema" title="Home Inventory database schema" /></p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="django" /><category term="django-autocomplete-light" /><category term="dal" /><category term="select2" /><category term="jquery" /><category term="ajax" /><summary type="html"><![CDATA[I recently fell in love with the Django framework and started to implement an app that I really need – Home Inventory, that helps me to track items at home (mostly food) and use them before the expiry date. So when I wanted to implement autocomplete for the product name when adding a new item to my inventory, I found an awesome django-autocomplete-light library. It immediately solved my problem but of course I wanted more – select the value of Category dropdown based on the Product name.]]></summary></entry><entry><title type="html">How to become a Red Hat Certified Architect (RHCA)</title><link href="https://notes.lina-is-here.com/2021/12/28/become-rhca.html" rel="alternate" type="text/html" title="How to become a Red Hat Certified Architect (RHCA)" /><published>2021-12-28T00:00:00+00:00</published><updated>2021-12-28T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2021/12/28/become-rhca</id><content type="html" xml:base="https://notes.lina-is-here.com/2021/12/28/become-rhca.html"><![CDATA[<p>This year I accomplished one of my goals – <a href="https://rhtapps.redhat.com/verify?certId=180-267-163">I became Red Hat Certified Architect 
+(in Infrastructure)</a>. To do this, I had to pass 7 Red Hat exams: 
+RHCSA (Red Hat Certified System Administrator),
+RHCE (Red Hat Certified Engineer) and
+5 exams of my choice.</p>
+
+<p>Why? Because I can!</p>
+
+<p>Here’s the strategy I used, and my top tips to pass the exams and earn RHCA.</p>
+
+<!--more-->
+
+<h2 id="contents">Contents</h2>
+<ul>
+  <li><a href="#general-information">General Information</a></li>
+  <li><a href="#strategy-before-the-exam">Strategy before the exam</a></li>
+  <li><a href="#strategy-during-the-exam">Strategy during the exam</a></li>
+  <li><a href="#strategy-after-the-exam">Strategy after the exam</a></li>
+  <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+
+<h3 id="general-information">General Information</h3>
+<p><strong>1. <a href="https://www.redhat.com/en/services/certification/rhca">RHCA is 7 exams, 2 compulsory and 5 of your choice.</a></strong></p>
+
+<p>In my case, I did the following exams:</p>
+<ul>
+  <li>EX200 Red Hat Certified System Administrator</li>
+  <li>EX300 Red Hat Certified Engineer</li>
+  <li>EX288 Red Hat Certified Specialist in OpenShift Application Development</li>
+  <li>EX318 Red Hat Certified Specialist in Virtualization</li>
+  <li>EX180 Red Hat Certified Specialist in Containers and Kubernetes</li>
+  <li>EX280 Red Hat Certified Specialist in OpenShift Administration</li>
+  <li>EX447 Red Hat Certified Specialist in Ansible Best Practices</li>
+</ul>
+
+<p><strong>2. Exams can be done at home with remote proctoring.</strong></p>
+
+<p>There’s no need to go anywhere, which is very convenient. But you do need a dedicated desk in a
+   room where you can sit without interruption – where other people can’t enter and disturb you.
+   See more on the <a href="https://www.redhat.com/en/services/certification/remote-exams">remote exams</a>.</p>
+
+<p><strong>3. Exams are hands-on exams.</strong></p>
+
+<p>There are many certifications out there but what’s cool (and hard!) about Red Hat exams is that 
+   they are more like a real environment, close to the work you actually need to perform. No multiple 
+   choice questions or anything like that!</p>
+
+<h3 id="strategy-before-the-exam">Strategy before the exam</h3>
+<p><strong>1. Choose the exams you are more likely to pass.</strong></p>
+
+<p>That doesn’t mean investigating which exam is the easiest. Although exams are very different in
+   their difficulty, it doesn’t mean the easy exam will be easy for you.
+   Chose the exam for the technology you are familiar with. Or at least have an interest to learn.</p>
+
+<p><strong>2. Set realistic goals.</strong></p>
+
+<p>From my experience, 1 exam per month is still ambitious but realistic. It is very likely to take 
+   longer – you might not be able to study at the desired pace or schedule the exam whenever you want.</p>
+
+<p><strong>3. Book the exam in advance!</strong></p>
+
+<p>This can be very easily overlooked. Sometimes you can finish studying and try to schedule 
+   the exam only to find out that the closest available date is one month away. 
+   To avoid this, I usually book the exam first (a few weeks in advance) and then start preparation. 
+   It also motivates me to study, as I have the date in the calendar already.</p>
+
+<p><strong>4. Start with the easiest (for you) exams first.</strong></p>
+
+<p>Exams are continuously updated and replaced, so there might be a chance that the exam 
+   you are saving for the dessert will not be available at all.</p>
+
+<p><strong>5. Study the objectives of each exam.</strong></p>
+
+<p>You will be evaluated only based on the objectives, so if the preparation material that you use 
+   contains something outside the objectives, it’s probably interesting and useful information, 
+   but not needed for the exam!</p>
+
+<p><strong>6. Know where the documentation is.</strong></p>
+
+<p>In general, for all exams – study the documentation, where it is, the structure, examples.</p>
+
+<p>For Linux exams <code class="language-plaintext highlighter-rouge">man</code> and <code class="language-plaintext highlighter-rouge">--help</code> are your friends.</p>
+
+<p>For OpenShift exams – get familiar with <a href="https://docs.openshift.com/container-platform/4.9/welcome/index.html">OpenShift docs</a>. IMPORTANT: choose the 
+   version that corresponds to your exam version.</p>
+
+<p>For Ansible exams – get familiar with <a href="https://docs.ansible.com/ansible/latest/index.html">Ansible docs</a> or <code class="language-plaintext highlighter-rouge">ansible-doc</code> command.</p>
+
+<p><strong>7. Practice a lot.</strong></p>
+
+<p>Whether in the practice lab or in your environment, that will save you a lot of time
+   at the actual exam.</p>
+
+<p><strong>8. Prepare the snacks!</strong></p>
+
+<p>It is allowed to have a drink and some snacks at the exam (on the desk).
+   As some exams are quite long (up to 4 hours), think what would you like to snack on.
+   I like to have nuts, cookies and some sweets at my desk. 
+   Be careful with the drinks: you are allowed to take a break after each hour of the exam, 
+   but the clock doesn’t stop!</p>
+
+<p><strong>9. Remember your password to the Red Hat account.</strong></p>
+
+<p>You will have to log in to your account before the exam starts.
+   So if you don’t type it often (e.g., have it in the
+   password manager), check it and memorize before the exam.</p>
+
+<h3 id="strategy-during-the-exam">Strategy during the exam</h3>
+<p><strong>1. Learn Vim shortcuts to save your time.</strong></p>
+
+<p>You can use any editor to edit files but Vim is usually installed,
+   so it’s easy to just use it.</p>
+
+<p><strong>2. Read all tasks first.</strong></p>
+
+<p>Some tasks may depend on another, so it makes sense to do them together.</p>
+
+<p>Some tasks may be destructive - that is, if you make a mistake, all progress will be lost. Do those
+   “destructive” tasks first, so to not risk all your work.</p>
+
+<p>After the destructive tasks, do the once that are easy for you and you understand them well.
+   The goal is to get as many points as possible. Often, if the task is “half-done”, you won’t get
+   any points at all, so it’s a wasted time and effort.</p>
+
+<p><strong>3. Follow the instruction from the exam page and not from the files.</strong></p>
+
+<p>Some exams may contain pre-made files, which you have to modify in a certain way.</p>
+
+<p>Those files may contain some comments – ignore them, it may only confuse you.</p>
+
+<h3 id="strategy-after-the-exam">Strategy after the exam</h3>
+
+<p>The results usually arrive within a few hours and contain your score,
+score in each section, and the conclusion: whether you passed or failed.</p>
+
+<p><strong>If you passed</strong>, congratulations! Your hard work paid off, and you can start the same process
+with the next exam in your list.</p>
+
+<p><strong>If you failed</strong>, check the score for each section and try to correspond the tasks you did to those sections.</p>
+
+<p>There’s no point in arguing with the grading. If you believe what you did was correct and worked, but
+the score is low (or zero) in that section, try to think if there’s another way of doing it, for example,
+doing something through CLI instead of UI.</p>
+
+<h3 id="conclusion">Conclusion</h3>
+
+<p>As any exam, it requires preparation. My strategy and tips helped me to achieve it rather quickly.
+That’s it and good luck with your certification!</p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="rhca" /><category term="certification" /><category term="linux" /><summary type="html"><![CDATA[This year I accomplished one of my goals – I became Red Hat Certified Architect (in Infrastructure). To do this, I had to pass 7 Red Hat exams: RHCSA (Red Hat Certified System Administrator), RHCE (Red Hat Certified Engineer) and 5 exams of my choice. Why? Because I can! Here’s the strategy I used, and my top tips to pass the exams and earn RHCA.]]></summary></entry><entry><title type="html">How to create a backup using rsync</title><link href="https://notes.lina-is-here.com/2021/12/22/create-a-backup-rsync.html" rel="alternate" type="text/html" title="How to create a backup using rsync" /><published>2021-12-22T00:00:00+00:00</published><updated>2021-12-22T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2021/12/22/create-a-backup-rsync</id><content type="html" xml:base="https://notes.lina-is-here.com/2021/12/22/create-a-backup-rsync.html"><![CDATA[<p>Sometimes I want to create a backup of my data on another server. 
+Or, maybe, copy some data from one place to another efficiently.
+The easiest thing to do in those cases is often to use a standard command <code class="language-plaintext highlighter-rouge">rsync</code>.</p>
+
+<p>This is a short note on how to create a backup using only <code class="language-plaintext highlighter-rouge">rsync</code> command.</p>
+
+<!--more-->
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ul>
+  <li>Data you want to sync</li>
+  <li>A server you want to sync to</li>
+  <li>Free space on that server</li>
+</ul>
+
+<h3 id="the-basic-command-i-use">The basic command I use</h3>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">rsync <span class="nt">-av</span> <span class="nt">--partial</span> <span class="nt">--progress</span> <span class="nt">--delete</span> <span class="nt">--exclude</span> <span class="s2">"Library"</span>  ~/ username@address:/path/to/directory/</code></pre></figure>
+
+<h3 id="explanation">Explanation</h3>
+
+<p><code class="language-plaintext highlighter-rouge">rsync</code> is the tool we are using</p>
+
+<p><code class="language-plaintext highlighter-rouge">-av</code> makes it recursive (not only) and adds verbosity (more information) to the output</p>
+
+<p><code class="language-plaintext highlighter-rouge">--partial</code> keeps the partial file in the case of interruption during the transfer</p>
+
+<p><code class="language-plaintext highlighter-rouge">--delete</code> deletes extraneous files from the receiving side. This is a very important option for doing a backup.
+It means that if the file is not present locally (e.g., on your laptop) but is present on the server 
+(maybe from previous backup), that file will be deleted</p>
+
+<p><code class="language-plaintext highlighter-rouge">--exclude</code> excludes files from the transfer. In macOS “Library” contains things like preferences and some
+cashes, so I don’t want to keep it in the backup</p>
+
+<p><code class="language-plaintext highlighter-rouge">~/</code> is the path to home directory I want to make a backup of</p>
+
+<p><code class="language-plaintext highlighter-rouge">username@address:/path/to/directory/</code> is the path on your server where you want to sync your data to</p>
+
+<h3 id="see-more">See more</h3>
+
+<p>For more information on <code class="language-plaintext highlighter-rouge">rsync</code>, type in your terminal</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">man rsync</code></pre></figure>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="linux" /><category term="cli" /><summary type="html"><![CDATA[Sometimes I want to create a backup of my data on another server. Or, maybe, copy some data from one place to another efficiently. The easiest thing to do in those cases is often to use a standard command rsync. This is a short note on how to create a backup using only rsync command.]]></summary></entry><entry><title type="html">How to create a blog with Jekyll 4 and host it for free on GitHub</title><link href="https://notes.lina-is-here.com/2021/12/14/create-blog-gh-pages.html" rel="alternate" type="text/html" title="How to create a blog with Jekyll 4 and host it for free on GitHub" /><published>2021-12-14T00:00:00+00:00</published><updated>2021-12-14T00:00:00+00:00</updated><id>https://notes.lina-is-here.com/2021/12/14/create-blog-gh-pages</id><content type="html" xml:base="https://notes.lina-is-here.com/2021/12/14/create-blog-gh-pages.html"><![CDATA[<p>Today I want to note down how I created this very blog using GitHub Pages and Jekyll 4 – a static site generator.</p>
+
+<p>Why? Because <a href="https://pages.github.com/versions/">GitHub uses Jekyll 3.9.0</a>, whereas the current version of Jekyll is 4.2.1,
+see <a href="https://github.com/jekyll/jekyll/releases">all Jekyll releases</a>.</p>
+
+<p>To do this I had to go through various sources and here is the complete guide.</p>
+
+<!--more-->
+
+<h2 id="contents">Contents</h2>
+<ul>
+  <li><a href="#prerequisites">Prerequisites</a></li>
+  <li><a href="#setting-up-github-repository">Setting up GitHub repository</a></li>
+  <li><a href="#setting-up-local-environment">Setting up local environment</a></li>
+  <li><a href="#setting-up-deployment-using-github-actions">Setting up deployment using GitHub Actions</a></li>
+  <li><a href="#optional-setting-up-custom-domain">(Optional) Setting up custom domain</a></li>
+  <li><a href="#example">Example</a></li>
+</ul>
+
+<h3 id="prerequisites">Prerequisites</h3>
+
+<ul>
+  <li>GitHub account</li>
+  <li>Installed Git locally</li>
+  <li>Basic knowledge of HTML and CSS – later for styling your blog</li>
+  <li>(Optional) Money for the custom domain</li>
+</ul>
+
+<h3 id="setting-up-github-repository">Setting up GitHub repository</h3>
+
+<p>First, create a <em>public</em> GitHub repository. The name of the repository should be <code class="language-plaintext highlighter-rouge">username.github.io</code>.
+For example, if your username is <code class="language-plaintext highlighter-rouge">octocat</code>, repository should be named <code class="language-plaintext highlighter-rouge">octocat.github.io</code>.</p>
+
+<p>Clone your repo locally</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>git clone git@github.com:username/username.github.io.git
+<span class="nv">$ </span><span class="nb">cd </span>username.github.io</code></pre></figure>
+
+<h3 id="setting-up-local-environment">Setting up local environment</h3>
+
+<ol>
+  <li>Install Ruby. MacOS has Ruby installed by default but let’s get a new one with <a href="https://brew.sh">Homebrew</a>.</li>
+</ol>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>brew <span class="nb">install </span>ruby</code></pre></figure>
+
+<p>Find out where brew ruby and gems are</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>brew info ruby</code></pre></figure>
+
+<p>Here’s what I have here:</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">...
+By default, binaries installed by gem will be placed into:
+  /usr/local/lib/ruby/gems/3.0.0/bin
+
+You may want to add this to your PATH.
+
+...
+
+
+If you need to have ruby first <span class="k">in </span>your PATH, run:
+  <span class="nb">echo</span> <span class="s1">'export PATH="/usr/local/opt/ruby/bin:$PATH"'</span> <span class="o">&gt;&gt;</span> /Users/myusername/.bash_profile
+...</code></pre></figure>
+
+<p>Add both of them to your PATH</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="s1">'export PATH="/usr/local/opt/ruby/bin:/usr/local/lib/ruby/gems/3.0.0/bin:$PATH"'</span> <span class="o">&gt;&gt;</span> ~/.bash_profile</code></pre></figure>
+
+<p>Relaunch terminal and verify you use the brew ruby now</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>which ruby
+/usr/local/opt/ruby/bin/ruby
+<span class="nv">$ </span>ruby <span class="nt">-v</span>
+ruby 3.0.3p157 <span class="o">(</span>2021-11-24 revision 3fb7d2cadc<span class="o">)</span> <span class="o">[</span>x86_64-darwin20]</code></pre></figure>
+
+<p>Now install jekyll and bundler</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>gem <span class="nb">install</span> <span class="nt">--user-install</span> bundler jekyll</code></pre></figure>
+
+<p>Add <code class="language-plaintext highlighter-rouge">.gem</code> to your PATH</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nb">echo</span> <span class="s1">'export PATH="$HOME/.gem/ruby/3.0.0/bin:$PATH"'</span> <span class="o">&gt;&gt;</span> ~/.bash_profile</code></pre></figure>
+
+<p>Initiate a new Jekyll site (<code class="language-plaintext highlighter-rouge">--force</code> option is here in case you already have some files in your directory that you don’t need and wish to overwrite)</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>jekyll new <span class="nb">.</span> <span class="nt">--force</span></code></pre></figure>
+
+<p>Build and run the site locally</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="nv">$ </span>bundle <span class="nb">exec </span>jekyll serve</code></pre></figure>
+
+<p>Open <a href="http://127.0.0.1:4000">http://127.0.0.1:4000</a> in your browser – you should see the website there.</p>
+
+<h3 id="setting-up-deployment-using-github-actions">Setting up deployment using GitHub Actions</h3>
+
+<p>Jekyll has <a href="https://jekyllrb.com/docs/continuous-integration/github-actions/">almost working instructions</a> on how to do that.</p>
+
+<p>Here’s what to do to make it work correctly.</p>
+
+<ol>
+  <li>Create in your project file <code class="language-plaintext highlighter-rouge">.github/workflows/github-pages.yml</code></li>
+  <li>Copy the following contents into that file</li>
+</ol>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh">name: Build and deploy Jekyll site to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+
+<span class="nb">jobs</span>:
+  github-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: helaili/jekyll-action@v2
+        with:
+          target_branch: <span class="s1">'gh-pages'</span>
+          token: <span class="k">${</span><span class="p">{ secrets.ACTIONS </span><span class="k">}</span><span class="o">}</span></code></pre></figure>
+
+<p>NOTE: <code class="language-plaintext highlighter-rouge">target_branch</code> is missing from Jekyll docs and token name can’t start with <code class="language-plaintext highlighter-rouge">GITHUB</code>, 
+so I choose the name <code class="language-plaintext highlighter-rouge">ACTIONS</code>.</p>
+
+<h4 id="setup-the-token-in-github">Setup the token in GitHub</h4>
+
+<ol>
+  <li>Go to <a href="https://github.com/settings/tokens">Personal access tokens</a> on GitHub.</li>
+  <li>Generate a new token:
+    <ul>
+      <li>give it <code class="language-plaintext highlighter-rouge">public_repo</code> permissions</li>
+      <li>setup expiration date</li>
+      <li>save the generated value locally</li>
+    </ul>
+  </li>
+  <li>Go to your repository’s settings on GitHub and then to the <code class="language-plaintext highlighter-rouge">Secrets</code> tab.</li>
+  <li>Create a token with the name <code class="language-plaintext highlighter-rouge">ACTIONS</code> (name should be the same as in the yaml file) and provide it 
+the saved value from the generated token.</li>
+</ol>
+
+<h4 id="add-all-generated-files-and-commit-them-to-github">Add all generated files and commit them to GitHub</h4>
+
+<p>Check what is tracked by git</p>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>git status</code></pre></figure>
+
+<p>If there’s anything you don’t want to add to GitHub, add those files to <code class="language-plaintext highlighter-rouge">.gitignore</code>.</p>
+
+<p>Add, commit and push your files</p>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>git add <span class="nt">--all</span>
+<span class="nv">$ </span>git commit <span class="nt">-m</span> <span class="s2">"Initial commit"</span>
+<span class="nv">$ </span>git push <span class="nt">-u</span> origin master</code></pre></figure>
+
+<h4 id="verify-your-changes">Verify your changes</h4>
+
+<p>Go to the <code class="language-plaintext highlighter-rouge">Actions</code> tab of the repository and see that the workflow is completed successfully.</p>
+
+<p>Once it is completed, navigate to <a href="https://username.github.io">https://username.github.io</a>, 
+where <code class="language-plaintext highlighter-rouge">username</code> is your GitHub username. Success, the blog is ready and is published for everyone to see!</p>
+
+<h3 id="optional-setting-up-custom-domain">(Optional) Setting up custom domain</h3>
+
+<p>If you want your blog to run at some address other than <code class="language-plaintext highlighter-rouge">username.github.io</code>, do the following:</p>
+<ol>
+  <li>Register a domain you like</li>
+  <li>Follow official <a href="https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site#configuring-a-subdomain">GitHub instructions</a></li>
+  <li>Add <code class="language-plaintext highlighter-rouge">CNAME</code> file to the root of your project and add there your domain (according to the documentation,
+it should be created automatically, but it did not happen ¯\_(ツ)_/¯)</li>
+</ol>
+
+<h3 id="example">Example</h3>
+<p>If you need a specific example, you can visit <a href="https://github.com/lina-is-here/lina-is-here.github.io">the source code of this blog</a>.</p>]]></content><author><name>Angelina Vasileva</name><email>hi@lina-is-here.com</email></author><category term="jekyll" /><category term="blog" /><category term="github" /><category term="website" /><summary type="html"><![CDATA[Today I want to note down how I created this very blog using GitHub Pages and Jekyll 4 – a static site generator. Why? Because GitHub uses Jekyll 3.9.0, whereas the current version of Jekyll is 4.2.1, see all Jekyll releases. To do this I had to go through various sources and here is the complete guide.]]></summary></entry></feed>

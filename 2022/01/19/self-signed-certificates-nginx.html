@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>How to generate a self-signed SSL certificate and use it in Nginx in docker-compose | Lina’s random notes</title>
+<meta name="generator" content="Jekyll v4.2.2" />
+<meta property="og:title" content="How to generate a self-signed SSL certificate and use it in Nginx in docker-compose" />
+<meta name="author" content="Angelina Vasileva" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="While implementing barcode scanning using QuaggaJS, I realized that I have to have a secure origin in order for the live scanning feature to work on mobile devices. Exactly, as written in QuaggaJS README file: Important: Accessing getUserMedia requires a secure origin in most browsers, meaning that http:// can only be used on localhost. All other hostnames need to be served via https://. The simplest thing to do for the development environment is to generate a self-signed certificate." />
+<meta property="og:description" content="While implementing barcode scanning using QuaggaJS, I realized that I have to have a secure origin in order for the live scanning feature to work on mobile devices. Exactly, as written in QuaggaJS README file: Important: Accessing getUserMedia requires a secure origin in most browsers, meaning that http:// can only be used on localhost. All other hostnames need to be served via https://. The simplest thing to do for the development environment is to generate a self-signed certificate." />
+<link rel="canonical" href="https://notes.lina-is-here.com/2022/01/19/self-signed-certificates-nginx.html" />
+<meta property="og:url" content="https://notes.lina-is-here.com/2022/01/19/self-signed-certificates-nginx.html" />
+<meta property="og:site_name" content="Lina’s random notes" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-01-19T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="How to generate a self-signed SSL certificate and use it in Nginx in docker-compose" />
+<script type="application/ld+json">
+{"dateModified":"2022-01-19T00:00:00+00:00","datePublished":"2022-01-19T00:00:00+00:00","description":"While implementing barcode scanning using QuaggaJS, I realized that I have to have a secure origin in order for the live scanning feature to work on mobile devices. Exactly, as written in QuaggaJS README file: Important: Accessing getUserMedia requires a secure origin in most browsers, meaning that http:// can only be used on localhost. All other hostnames need to be served via https://. The simplest thing to do for the development environment is to generate a self-signed certificate.","mainEntityOfPage":{"@type":"WebPage","@id":"https://notes.lina-is-here.com/2022/01/19/self-signed-certificates-nginx.html"},"url":"https://notes.lina-is-here.com/2022/01/19/self-signed-certificates-nginx.html","@type":"BlogPosting","author":{"@type":"Person","name":"Angelina Vasileva"},"headline":"How to generate a self-signed SSL certificate and use it in Nginx in docker-compose","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://notes.lina-is-here.com/feed.xml" title="Lina's random notes" /><script async src="https://www.googletagmanager.com/gtag/js?id=G-FBCQY9M93K"></script>
+<script>
+  window['ga-disable-G-FBCQY9M93K'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-FBCQY9M93K');
+</script>
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+<link rel="manifest" href="/assets/site.webmanifest">
+<link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#5bbad5">
+<link rel="shortcut icon" href="/assets/favicon.ico">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="msapplication-config" content="/assets/browserconfig.xml">
+<meta name="theme-color" content="#ffffff">
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Lina&#39;s random notes</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">How to generate a self-signed SSL certificate and use it in Nginx in docker-compose</h1>
+    <p class="post-meta"><time class="dt-published" datetime="2022-01-19T00:00:00+00:00" itemprop="datePublished">
+        Jan 19, 2022
+      </time><br>
+      <span><a href="/tag/linux.html" rel="tag">linux</a>, <a href="/tag/cli.html" rel="tag">cli</a>, <a href="/tag/openssl.html" rel="tag">openssl</a>, <a href="/tag/ssl.html" rel="tag">ssl</a>, <a href="/tag/nginx.html" rel="tag">nginx</a>, <a href="/tag/docker-compose.html" rel="tag">docker-compose</a></span>
+    </p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>While implementing barcode scanning using <a href="https://github.com/serratus/quaggaJS">QuaggaJS</a>, I realized that I have to have a secure origin 
+in order for the live scanning feature to work on mobile devices. Exactly, as written in QuaggaJS README file:</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text">Important: Accessing getUserMedia requires a secure origin in most browsers, 
+meaning that http:// can only be used on localhost. 
+All other hostnames need to be served via https://. </code></pre></figure>
+
+<p>The simplest thing to do for the development environment is to generate a self-signed certificate.</p>
+
+<!--more-->
+
+<h3 id="generating-self-signed-certificate">Generating self-signed certificate</h3>
+
+<p>Only one command is needed:</p>
+
+<figure class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>openssl req <span class="nt">-newkey</span> rsa:2048 <span class="nt">-nodes</span> <span class="nt">-keyout</span> domain.key <span class="nt">-x509</span> <span class="nt">-days</span> 365 <span class="nt">-out</span> domain.crt</code></pre></figure>
+
+<p>The command will prompt for the information to include in the certificate request. You can fill them as you wish,
+only the <code class="language-plaintext highlighter-rouge">Common Name (eg, fully qualified host name)</code> is required to generate the certificate.</p>
+
+<h3 id="nginx-config">Nginx config</h3>
+
+<p>The following should be in the nginx config:</p>
+
+<figure class="highlight"><pre><code class="language-nginx" data-lang="nginx"><span class="k">server</span> <span class="p">{</span>
+    <span class="kn">listen</span>      <span class="mi">443</span> <span class="s">ssl</span> <span class="s">http2</span><span class="p">;</span>
+    <span class="kn">server_tokens</span> <span class="no">off</span><span class="p">;</span>
+    <span class="kn">ssl_certificate</span> <span class="nc">ssl/domain</span><span class="s">.crt</span><span class="p">;</span>
+    <span class="kn">ssl_certificate_key</span> <span class="nc">ssl/domain</span><span class="s">.key</span><span class="p">;</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>Check the path for <code class="language-plaintext highlighter-rouge">ssl_certificate</code> and <code class="language-plaintext highlighter-rouge">ssl_certificate_key</code> in your configuration.
+The suggested path works if the certificates directory is mounted to <code class="language-plaintext highlighter-rouge">/etc/nginx/ssl</code> as described below in 
+docker-compose config.</p>
+
+<h3 id="docker-compose-config">Docker-compose config</h3>
+
+<p>In order for the certificate to work, add the following volume (assuming <code class="language-plaintext highlighter-rouge">domain.crt</code> and <code class="language-plaintext highlighter-rouge">domain.key</code> are located in
+ the <code class="language-plaintext highlighter-rouge">certs</code> directory at the root of the project) to the nginx container:</p>
+
+<figure class="highlight"><pre><code class="language-yml" data-lang="yml"><span class="na">volumes</span><span class="pi">:</span><span class="err">
+</span>
+  <span class="pi">-</span> <span class="s">./certs:/etc/nginx/ssl</span></code></pre></figure>
+
+<p>And don’t forget to change the port:</p>
+
+<figure class="highlight"><pre><code class="language-yml" data-lang="yml"><span class="na">ports</span><span class="pi">:</span><span class="err">
+</span>
+  <span class="pi">-</span> <span class="s">8443:443</span></code></pre></figure>
+
+
+  </div><a class="u-url" href="/2022/01/19/self-signed-certificates-nginx.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+        <ul class="contact-list">
+          <li class="p-name">Angelina Vasileva</li>
+          <li><a class="u-email" href="mailto:hi@lina-is-here.com">hi@lina-is-here.com</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p>A place for my notes to share with others.</p>
+        <a class="coffee-link" href="https://www.buymeacoffee.com/linaishere">Buy Me A Coffee</a>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/lina-is-here" target="_blank" title="lina-is-here"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://www.linkedin.com/in/vasilevaangelina" target="_blank" title="vasilevaangelina"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer></body>
+
+</html>

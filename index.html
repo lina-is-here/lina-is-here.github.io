@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.7.1 -->
+<title>Lina’s random notes | A place for my notes to share with others.</title>
+<meta name="generator" content="Jekyll v4.2.2" />
+<meta property="og:title" content="Lina’s random notes" />
+<meta name="author" content="Angelina Vasileva" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A place for my notes to share with others." />
+<meta property="og:description" content="A place for my notes to share with others." />
+<link rel="canonical" href="https://notes.lina-is-here.com/" />
+<meta property="og:url" content="https://notes.lina-is-here.com/" />
+<meta property="og:site_name" content="Lina’s random notes" />
+<link rel="next" href="https://notes.lina-is-here.com/page2" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Lina’s random notes" />
+<script type="application/ld+json">
+{"description":"A place for my notes to share with others.","url":"https://notes.lina-is-here.com/","@type":"WebSite","author":{"@type":"Person","name":"Angelina Vasileva"},"name":"Lina’s random notes","headline":"Lina’s random notes","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://notes.lina-is-here.com/feed.xml" title="Lina's random notes" /><script async src="https://www.googletagmanager.com/gtag/js?id=G-FBCQY9M93K"></script>
+<script>
+  window['ga-disable-G-FBCQY9M93K'] = window.doNotTrack === "1" || navigator.doNotTrack === "1" || navigator.doNotTrack === "yes" || navigator.msDoNotTrack === "1";
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){window.dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-FBCQY9M93K');
+</script>
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
+<link rel="manifest" href="/assets/site.webmanifest">
+<link rel="mask-icon" href="/assets/safari-pinned-tab.svg" color="#5bbad5">
+<link rel="shortcut icon" href="/assets/favicon.ico">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="msapplication-config" content="/assets/browserconfig.xml">
+<meta name="theme-color" content="#ffffff">
+</head>
+<body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">Lina&#39;s random notes</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <div class="home">
+
+
+  <ul class="post-list"><li>
+        <span class="post-meta">Aug 4, 2022</span>
+        <h3>
+          <a class="post-link" href="/2022/08/04/schemathesis-docker-compose.html">
+            How to use Schemathesis to test Flask API in GitHub Actions
+          </a>
+        </h3><p>It’s been definitely more than a year since I first discovered <a href="https://github.com/schemathesis/schemathesis">Schemathesis</a>.
+I ran it against one API and got overwhelming amount of errors. Recently I re-discovered it again and something just clicked!</p>
+
+<p>I started to implement fuzzy testing for <a href="https://github.com/ibutsu/ibutsu-server">Ibutsu</a>, which is basically an API written 
+in Flask (python).</p>
+
+<p>The application consists of several parts: frontend, backend, worker, postgres and redis. So how can we run it, run 
+fuzzy testing against it and do it all in each PR in GitHub actions?</p>
+
+
+        <a class="continue-link" href="/2022/08/04/schemathesis-docker-compose.html">Continue...</a></li><li>
+        <span class="post-meta">Mar 9, 2022</span>
+        <h3>
+          <a class="post-link" href="/2022/03/09/aws-s3-notifications-sqs.html">
+            How to create automatic notifications in AWS SQS when the new object is added to S3 bucket
+          </a>
+        </h3><p>AWS has great documentation, but I want to document some things that were easy to miss when I configured notifications 
+to Amazon SQS (Simple Queue Service) from S3 (Simple Storage Service) bucket.</p>
+
+<p>To achieve this nice flow of notifications, the first thing to do is:</p>
+
+<p><strong>1. Create S3 bucket.</strong></p>
+
+<p>There are several ways to do it. Probably, the easiest is using AWS console.
+Navigate to S3 service and click on “Create bucket”.</p>
+
+<p><strong>2. Create SQS queue.</strong></p>
+
+
+        <a class="continue-link" href="/2022/03/09/aws-s3-notifications-sqs.html">Continue...</a></li><li>
+        <span class="post-meta">Feb 13, 2022</span>
+        <h3>
+          <a class="post-link" href="/2022/02/13/fix-positioning-dal-crispy-forms.html">
+            How to fix positioning of dropdowns when using django-autocomplete-light and crispy forms
+          </a>
+        </h3><p><a href="https://django-autocomplete-light.readthedocs.io/en/master/">Django-autocomplete-light</a> library provides a great way 
+to implement select widget with autocomplete feature in Django forms. I used it, and I am very happy with the result. 
+But my form was still pretty ugly and the obvious and popular solution is to fix it with 
+<a href="https://django-crispy-forms.readthedocs.io/en/latest/">django-crispy-forms</a> library. I love it! It’s easily configurable 
+in the form class, and the only thing in the template to render the form is  <code class="language-plaintext highlighter-rouge">{% crispy form %}</code> . Nice and clean!</p>
+
+<p>However, nothing is that easy, right? After adding {% crispy %} tag, my form became messier than ever. Autocomplete 
+selects were totally different from other fields in the form.</p>
+
+<p>This is how the ugly form looks like:</p>
+
+<p><img src="/assets/img/2022-02-13-fix-positioning-dal-crispy-forms/before.png" alt="Ugly form" title="Ugly form" /></p>
+
+
+        <a class="continue-link" href="/2022/02/13/fix-positioning-dal-crispy-forms.html">Continue...</a></li><li>
+        <span class="post-meta">Jan 26, 2022</span>
+        <h3>
+          <a class="post-link" href="/2022/01/26/django-only-one-row-specific-value.html">
+            How to create a Django model where only one row can have a specific value
+          </a>
+        </h3><p>In my <a href="https://github.com/lina-is-here/home_inventory">Home Inventory app</a> I implemented the model for Measurement and each Item has its own 
+Measurement.</p>
+
+<p>Later I got tired of selecting measurement value for each new item in the UI as in 99% cases I selected “pcs”.
+I didn’t want to hardcode initial value, so I started to investigate: how to allow only one row to have a 
+specific field value? Or, in my case, how to create a Django model where only one row can have value True?</p>
+
+
+        <a class="continue-link" href="/2022/01/26/django-only-one-row-specific-value.html">Continue...</a></li><li>
+        <span class="post-meta">Jan 19, 2022</span>
+        <h3>
+          <a class="post-link" href="/2022/01/19/self-signed-certificates-nginx.html">
+            How to generate a self-signed SSL certificate and use it in Nginx in docker-compose
+          </a>
+        </h3><p>While implementing barcode scanning using <a href="https://github.com/serratus/quaggaJS">QuaggaJS</a>, I realized that I have to have a secure origin 
+in order for the live scanning feature to work on mobile devices. Exactly, as written in QuaggaJS README file:</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text">Important: Accessing getUserMedia requires a secure origin in most browsers, 
+meaning that http:// can only be used on localhost. 
+All other hostnames need to be served via https://. </code></pre></figure>
+
+<p>The simplest thing to do for the development environment is to generate a self-signed certificate.</p>
+
+
+        <a class="continue-link" href="/2022/01/19/self-signed-certificates-nginx.html">Continue...</a></li><li>
+        <span class="post-meta">Jan 12, 2022</span>
+        <h3>
+          <a class="post-link" href="/2022/01/12/css-position-absolute-relative-quaggajs.html">
+            How to overlay one HTML element over another using CSS (QuaggaJS barcode scanner)
+          </a>
+        </h3><p>I was looking for a tool that can help me to implement barcode scanning for my <a href="https://github.com/lina-is-here/home_inventory">Home Inventory app</a>.</p>
+
+<p>After considering several options, I decided to proceed with the JavaScript library <a href="https://github.com/serratus/quaggaJS">QuaggaJS</a>.
+In the repository they have examples, including the example of live barcode detection. I slightly modified it and 
+added it to my project. It worked beautifully, except that the barcode locator (rectangle around the detected barcode) 
+was in a completely different place!</p>
+
+<p>Here’s how the problem looks like:</p>
+
+
+        <a class="continue-link" href="/2022/01/12/css-position-absolute-relative-quaggajs.html">Continue...</a></li><li>
+        <span class="post-meta">Jan 5, 2022</span>
+        <h3>
+          <a class="post-link" href="/2022/01/05/django-dal-dropdown-ajax.html">
+            How to select dropdown value based on another dropdown using django-autocomplete-light
+          </a>
+        </h3><p>I recently fell in love with the Django framework and started to implement an app that I really need –
+<a href="https://github.com/lina-is-here/home_inventory">Home Inventory</a>, that helps me to track items at home (mostly food) and use them before 
+the expiry date.</p>
+
+<p>So when I wanted to implement autocomplete for the product name when adding a new item to my inventory,
+I found an awesome <a href="https://github.com/yourlabs/django-autocomplete-light">django-autocomplete-light</a> library. It immediately solved my problem but of course I
+wanted more – select the value of Category dropdown based on the Product name.</p>
+
+
+        <a class="continue-link" href="/2022/01/05/django-dal-dropdown-ajax.html">Continue...</a></li><li>
+        <span class="post-meta">Dec 28, 2021</span>
+        <h3>
+          <a class="post-link" href="/2021/12/28/become-rhca.html">
+            How to become a Red Hat Certified Architect (RHCA)
+          </a>
+        </h3><p>This year I accomplished one of my goals – <a href="https://rhtapps.redhat.com/verify?certId=180-267-163">I became Red Hat Certified Architect 
+(in Infrastructure)</a>. To do this, I had to pass 7 Red Hat exams: 
+RHCSA (Red Hat Certified System Administrator),
+RHCE (Red Hat Certified Engineer) and
+5 exams of my choice.</p>
+
+<p>Why? Because I can!</p>
+
+<p>Here’s the strategy I used, and my top tips to pass the exams and earn RHCA.</p>
+
+
+        <a class="continue-link" href="/2021/12/28/become-rhca.html">Continue...</a></li><li>
+        <span class="post-meta">Dec 22, 2021</span>
+        <h3>
+          <a class="post-link" href="/2021/12/22/create-a-backup-rsync.html">
+            How to create a backup using rsync
+          </a>
+        </h3><p>Sometimes I want to create a backup of my data on another server. 
+Or, maybe, copy some data from one place to another efficiently.
+The easiest thing to do in those cases is often to use a standard command <code class="language-plaintext highlighter-rouge">rsync</code>.</p>
+
+<p>This is a short note on how to create a backup using only <code class="language-plaintext highlighter-rouge">rsync</code> command.</p>
+
+
+        <a class="continue-link" href="/2021/12/22/create-a-backup-rsync.html">Continue...</a></li><li>
+        <span class="post-meta">Dec 14, 2021</span>
+        <h3>
+          <a class="post-link" href="/2021/12/14/create-blog-gh-pages.html">
+            How to create a blog with Jekyll 4 and host it for free on GitHub
+          </a>
+        </h3><p>Today I want to note down how I created this very blog using GitHub Pages and Jekyll 4 – a static site generator.</p>
+
+<p>Why? Because <a href="https://pages.github.com/versions/">GitHub uses Jekyll 3.9.0</a>, whereas the current version of Jekyll is 4.2.1,
+see <a href="https://github.com/jekyll/jekyll/releases">all Jekyll releases</a>.</p>
+
+<p>To do this I had to go through various sources and here is the complete guide.</p>
+
+
+        <a class="continue-link" href="/2021/12/14/create-blog-gh-pages.html">Continue...</a></li></ul>
+
+    
+      <div class="pager">
+        <ul class="pagination">
+          <li><div class="pager-edge">•</div></li>
+          <li><div class="current-page">1</div></li>
+          <li><a href="/page2" class="next-page">2</a></li>
+        </ul>
+      </div></div>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+        <ul class="contact-list">
+          <li class="p-name">Angelina Vasileva</li>
+          <li><a class="u-email" href="mailto:hi@lina-is-here.com">hi@lina-is-here.com</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <p>A place for my notes to share with others.</p>
+        <a class="coffee-link" href="https://www.buymeacoffee.com/linaishere">Buy Me A Coffee</a>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/lina-is-here" target="_blank" title="lina-is-here"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://www.linkedin.com/in/vasilevaangelina" target="_blank" title="vasilevaangelina"><svg class="svg-icon grey"><use xlink:href="/assets/minima-social-icons.svg#linkedin"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer></body>
+
+</html>
